@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Loan Default Classifier</title>
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+	<style>
+		#example {
+            font-weight: bold;
+            background-color: #eee;
+            padding: 5px; /* Adjusted padding */
+            margin-bottom: 10px;
+        }
+        
+        #predict {
+            font-size: 18px;
+            padding: 10px;
+            margin-top: 10px;
+        }
+
+        #prediction {
+            font-size: 20px;
+            margin-top: 10px;
+        }
+	</style>
+</head>
+<script type="text/javascript">
+
+    $(function() {
+        $('#predict').click(function() {
+            event.preventDefault();
+            var form_data = new FormData($('#myform')[0]);
+            console.log(form_data);
+            $.ajax({
+                type: 'POST',
+                url: '/',
+                data: form_data,
+                contentType: false,
+                processData: false,
+            }).done(function(data, textStatus, jqXHR){
+                $('#prediction').text('Predicted label: ' + data.predicted_label);
+            }).fail(function(data){
+                alert('Error: Incorrect Inputs!');
+            });
+        });
+    }); 
+
+</script>
+<body>
+	<h1>Loan Default Classifier</h1>
+	
+	<!-- Example Section -->
+    <div id="example">
+        <p>Example Applicant's Characteristics:</p>
+        <table border="1">
+            {% for key, value in example_applicant.items() %}
+                <tr>
+                    <td>{{ key }}: {{ value }}</td>
+                </tr>
+            {% endfor %}
+        </table>
+    </div>
+
+	<!-- User Input Section -->
+    <form id="myform" method="POST">
+        {% for feature_info in feature_options %}
+            <label for="{{ feature_info.name }}">
+                {{ feature_info.name }}:
+                <span class="explanation">{{ feature_explanations.get(feature_info.name, '') }}</span>
+            </label>
+            {% if feature_info.type == 'categorical' %}
+                <select name="{{ feature_info.name }}">
+                    {% for option in feature_info.options %}
+                        <option value="{{ option }}">{{ option }}</option>
+                    {% endfor %}
+                </select><br>
+            {% elif feature_info.type == 'numerical' %}
+                <input type="number" name="{{ feature_info.name }}" placeholder="Enter a numerical value" step="any"><br>
+            {% endif %}
+        {% endfor %}
+        <button id="predict">Predict</button>
+    </form>
+
+	<!-- Prediction Section -->
+	<div id="prediction"></div>
+
+</body>
+</html>
